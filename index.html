@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-emerald-50/40 text-slate-800">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Food Waste Management System</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta name="theme-color" content="#16a34a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="EcoWaste">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2921/2921822.png">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="h-full flex flex-col font-sans antialiased bg-emerald-50/30 text-slate-800">
+
+    <!-- Header / Navbar -->
+    <header class="border-b border-emerald-200/80 bg-white/90 backdrop-blur sticky top-0 z-40 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-emerald-100 p-2.5 rounded-2xl border border-emerald-300 text-emerald-700 shadow-inner">
+                    <i class="fa-solid fa-seedling text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight text-emerald-950 flex items-center gap-2">
+                        EcoWaste AI <span class="bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs px-2.5 py-0.5 rounded-full font-semibold">Smart Household Inventory</span>
+                    </h1>
+                    <p class="text-xs text-emerald-700/80">AI Expiry Predictor & Data Structure Waste Optimizer</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <button id="run-analysis-btn" onclick="runSmartAnalysis()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-sm px-4 py-2 rounded-xl shadow-md shadow-emerald-600/20 flex items-center gap-2 transition duration-200 cursor-pointer">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span>Run Smart Analysis</span>
+                </button>
+                <button onclick="resetDemoData()" class="bg-emerald-100/80 hover:bg-emerald-200/80 text-emerald-900 text-sm font-medium px-3.5 py-2 rounded-xl border border-emerald-300 flex items-center gap-2 transition shadow-sm">
+                    <i class="fa-solid fa-rotate-left"></i>
+                    <span>Reset Synthetic Data</span>
+                </button>
+                <button onclick="openAddItemModal()" class="bg-emerald-800 hover:bg-emerald-900 text-white text-sm font-medium px-3.5 py-2 rounded-xl flex items-center gap-2 shadow-sm transition">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Add Item</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- AI + DSA Workflow Stepper -->
+        <div id="workflow-bar" class="hidden bg-white border border-emerald-300/80 rounded-2xl p-4 shadow-md shadow-emerald-900/5">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-emerald-800 uppercase tracking-wider flex items-center gap-1.5">
+                    <i class="fa-solid fa-gears animate-spin text-emerald-600"></i> Integrated AI + DSA Pipeline Active
+                </span>
+                <span id="workflow-status" class="text-xs text-emerald-700 font-medium">Workflow Sync Complete</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-2 text-center text-xs">
+                <div class="bg-emerald-50/80 p-2.5 rounded-xl border border-emerald-200 text-emerald-900 font-medium flex items-center justify-center gap-2 shadow-xs">
+                    <span class="w-5 h-5 bg-emerald-600 text-white rounded-full flex items-center justify-center font-bold text-[10px]">1</span>
+                    <span>AI Demand & Waste Predicts</span>
+                </div>
+                <div class="bg-emerald-50/80 p-2.5 rounded-xl border border-emerald-200 text-emerald-900 font-medium flex items-center justify-center gap-2 shadow-xs">
+                    <span class="w-5 h-5 bg-emerald-600 text-white rounded-full flex items-center justify-center font-bold text-[10px]">2</span>
+                    <span>Linked List Inventory Updates</span>
+                </div>
+                <div class="bg-emerald-50/80 p-2.5 rounded-xl border border-emerald-200 text-emerald-900 font-medium flex items-center justify-center gap-2 shadow-xs">
+                    <span class="w-5 h-5 bg-emerald-600 text-white rounded-full flex items-center justify-center font-bold text-[10px]">3</span>
+                    <span>Max Heap Ranks Priorities</span>
+                </div>
+                <div class="bg-emerald-50/80 p-2.5 rounded-xl border border-emerald-200 text-emerald-900 font-medium flex items-center justify-center gap-2 shadow-xs">
+                    <span class="w-5 h-5 bg-emerald-600 text-white rounded-full flex items-center justify-center font-bold text-[10px]">4</span>
+                    <span>FIFO Queue Enqueues Urgencies</span>
+                </div>
+                <div class="bg-emerald-50/80 p-2.5 rounded-xl border border-emerald-200 text-emerald-900 font-medium flex items-center justify-center gap-2 shadow-xs">
+                    <span class="w-5 h-5 bg-emerald-600 text-white rounded-full flex items-center justify-center font-bold text-[10px]">5</span>
+                    <span>Smart Recommendations Generated</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metric KPI Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <!-- Total Food Items -->
+            <div class="bg-white border border-emerald-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition">
+                <div class="flex items-center justify-between text-slate-500 mb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-emerald-800/80">Total Items</span>
+                    <div class="w-8 h-8 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-700">
+                        <i class="fa-solid fa-boxes-stacked text-sm"></i>
+                    </div>
+                </div>
+                <div id="stat-total-items" class="text-2xl font-bold text-slate-900">--</div>
+                <p class="text-[11px] text-slate-500 mt-1 font-medium">Active in linked list</p>
+            </div>
+
+            <!-- Items Expiring Soon -->
+            <div class="bg-white border border-amber-200/80 rounded-2xl p-4 shadow-sm hover:shadow-md transition">
+                <div class="flex items-center justify-between text-slate-500 mb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-amber-900/80">Expiring Soon</span>
+                    <div class="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center text-amber-700">
+                        <i class="fa-solid fa-clock text-sm"></i>
+                    </div>
+                </div>
+                <div id="stat-expiring-soon" class="text-2xl font-bold text-amber-600">--</div>
+                <p class="text-[11px] text-slate-500 mt-1 font-medium">Expiring within ≤ 3 days</p>
+            </div>
+
+            <!-- Predicted Food Waste -->
+            <div class="bg-white border border-rose-200/80 rounded-2xl p-4 shadow-sm hover:shadow-md transition">
+                <div class="flex items-center justify-between text-slate-500 mb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-rose-900/80">Predicted Waste</span>
+                    <div class="w-8 h-8 rounded-xl bg-rose-100 flex items-center justify-center text-rose-600">
+                        <i class="fa-solid fa-trash-can text-sm"></i>
+                    </div>
+                </div>
+                <div id="stat-predicted-waste" class="text-2xl font-bold text-rose-600">--</div>
+                <p class="text-[11px] text-slate-500 mt-1 font-medium">Estimated risk quantity</p>
+            </div>
+
+            <!-- High Priority Items -->
+            <div class="bg-white border border-red-200/80 rounded-2xl p-4 shadow-sm hover:shadow-md transition">
+                <div class="flex items-center justify-between text-slate-500 mb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-red-900/80">Max Heap Root</span>
+                    <div class="w-8 h-8 rounded-xl bg-red-100 flex items-center justify-center text-red-600">
+                        <i class="fa-solid fa-fire text-sm"></i>
+                    </div>
+                </div>
+                <div id="stat-high-priority" class="text-2xl font-bold text-red-600">--</div>
+                <p class="text-[11px] text-slate-500 mt-1 font-medium">Urgent attention items</p>
+            </div>
+
+            <!-- Estimated Food Saved -->
+            <div class="bg-white border border-emerald-200/90 rounded-2xl p-4 shadow-sm hover:shadow-md transition">
+                <div class="flex items-center justify-between text-slate-500 mb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-emerald-900/80">Estimated Saved</span>
+                    <div class="w-8 h-8 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-700">
+                        <i class="fa-solid fa-piggy-bank text-sm"></i>
+                    </div>
+                </div>
+                <div id="stat-food-saved" class="text-2xl font-bold text-emerald-700">--</div>
+                <p id="stat-money-saved" class="text-[11px] text-emerald-700 font-semibold mt-1">--</p>
+            </div>
+        </div>
+
+        <!-- Data Structure Visualizer Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- 1. Linked List Inventory Chain -->
+            <div class="lg:col-span-3 bg-white border border-emerald-200/80 rounded-2xl p-5 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                            <i class="fa-solid fa-link text-xs"></i>
+                        </div>
+                        <h2 class="text-sm font-bold text-emerald-950 uppercase tracking-wider">Custom Linked List — Inventory Chain</h2>
+                    </div>
+                    <span class="text-xs text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 font-semibold">
+                        Linear Node Chain (Node -> Node -> NULL)
+                    </span>
+                </div>
+                <div class="overflow-x-auto py-3 px-1 scrollbar-thin">
+                    <div id="linked-list-nodes-container" class="flex items-center space-x-3 min-w-max">
+                        <!-- Rendered dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Custom Max Heap Priority Matrix -->
+            <div class="bg-white border border-emerald-200/80 rounded-2xl p-5 shadow-sm flex flex-col">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center">
+                            <i class="fa-solid fa-layer-group text-xs"></i>
+                        </div>
+                        <h2 class="text-sm font-bold text-emerald-950 uppercase tracking-wider">Custom Max Heap — Expiry/Waste Priority</h2>
+                    </div>
+                    <span class="text-xs text-amber-800 font-mono font-semibold bg-amber-100 px-2 py-0.5 rounded-md border border-amber-200">Max Root at Top</span>
+                </div>
+
+                <div id="heap-container" class="space-y-2.5 flex-1 overflow-y-auto max-h-[380px] pr-1">
+                    <!-- Rendered dynamically -->
+                </div>
+            </div>
+
+            <!-- 3. Custom FIFO Queue Consumption/Redistribution -->
+            <div class="bg-white border border-emerald-200/80 rounded-2xl p-5 shadow-sm flex flex-col">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                            <i class="fa-solid fa-right-left text-xs"></i>
+                        </div>
+                        <h2 class="text-sm font-bold text-emerald-950 uppercase tracking-wider">Custom FIFO Queue — Redistribution Pipeline</h2>
+                    </div>
+                    <button onclick="dequeueFrontItem()" class="text-xs bg-emerald-700 hover:bg-emerald-800 text-white font-semibold px-3 py-1 rounded-xl transition shadow-xs">
+                        Process Front (Dequeue)
+                    </button>
+                </div>
+
+                <div class="text-xs text-emerald-900 font-mono mb-3 bg-emerald-50/80 p-2.5 rounded-xl border border-emerald-200 truncate font-medium" id="queue-visual-text">
+                    FRONT -> NULL
+                </div>
+
+                <div id="queue-container" class="space-y-2.5 flex-1 overflow-y-auto max-h-[320px] pr-1">
+                    <!-- Rendered dynamically -->
+                </div>
+            </div>
+
+            <!-- 4. Smart AI Recommendations -->
+            <div class="bg-white border border-emerald-200/80 rounded-2xl p-5 shadow-sm flex flex-col">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-7 h-7 rounded-lg bg-yellow-100 text-yellow-700 flex items-center justify-center">
+                            <i class="fa-solid fa-lightbulb text-xs"></i>
+                        </div>
+                        <h2 class="text-sm font-bold text-emerald-950 uppercase tracking-wider">Smart Recommendations</h2>
+                    </div>
+                    <span class="text-xs text-slate-500 font-medium">Real-time Insights</span>
+                </div>
+
+                <div id="recommendations-container" class="space-y-2.5 flex-1 overflow-y-auto max-h-[380px] pr-1">
+                    <!-- Rendered dynamically -->
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white border border-emerald-200/80 rounded-2xl p-5 shadow-sm">
+                <h3 class="text-sm font-bold text-emerald-950 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-column text-emerald-600"></i> Monthly Consumption Demand vs Predicted Waste by Category
+                </h3>
+                <div class="h-64 relative">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white border border-emerald-200/80 rounded-2xl p-5 shadow-sm">
+                <h3 class="text-sm font-bold text-emerald-950 uppercase tracking-wider mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-pie text-emerald-600"></i> Inventory Expiry Risk Distribution
+                </h3>
+                <div class="h-64 relative">
+                    <canvas id="riskChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Full Inventory Table -->
+        <div class="bg-white border border-emerald-200/80 rounded-2xl p-5 shadow-sm">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                <div class="flex items-center space-x-2">
+                    <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                        <i class="fa-solid fa-list-check text-xs"></i>
+                    </div>
+                    <h2 class="text-base font-bold text-emerald-950">Food Inventory (Linked List Nodes)</h2>
+                </div>
+
+                <!-- Filters & Search -->
+                <div class="flex flex-wrap items-center gap-3">
+                    <div class="relative">
+                        <input type="text" id="search-input" onkeyup="filterInventoryTable()" placeholder="Search food items..." class="bg-emerald-50/50 border border-emerald-200 text-xs rounded-xl px-3 py-2 pl-8 text-slate-800 focus:outline-none focus:border-emerald-500 w-44 sm:w-56">
+                        <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2.5 text-slate-400 text-xs"></i>
+                    </div>
+
+                    <select id="category-filter" onchange="filterInventoryTable()" class="bg-emerald-50/50 border border-emerald-200 text-xs rounded-xl px-3 py-2 text-slate-800 focus:outline-none focus:border-emerald-500 font-medium">
+                        <option value="all">All Categories</option>
+                        <option value="Dairy">Dairy</option>
+                        <option value="Bakery">Bakery</option>
+                        <option value="Vegetables">Vegetables</option>
+                        <option value="Fruits">Fruits</option>
+                        <option value="Meat & Seafood">Meat & Seafood</option>
+                        <option value="Grains & Staples">Grains & Staples</option>
+                        <option value="Beverages">Beverages</option>
+                        <option value="Snacks & Pantry">Snacks & Pantry</option>
+                    </select>
+
+                    <select id="risk-filter" onchange="filterInventoryTable()" class="bg-emerald-50/50 border border-emerald-200 text-xs rounded-xl px-3 py-2 text-slate-800 focus:outline-none focus:border-emerald-500 font-medium">
+                        <option value="all">All Risk Levels</option>
+                        <option value="High">🔴 High Risk</option>
+                        <option value="Medium">🟠 Medium Risk</option>
+                        <option value="Low">🟢 Low Risk</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs text-slate-700">
+                    <thead class="bg-emerald-50/80 text-emerald-900 uppercase tracking-wider text-[11px] border-b border-emerald-200 font-bold">
+                        <tr>
+                            <th class="py-3 px-4">Item Name</th>
+                            <th class="py-3 px-4">Category</th>
+                            <th class="py-3 px-4">Quantity</th>
+                            <th class="py-3 px-4">Expiry Date</th>
+                            <th class="py-3 px-4">Days Left</th>
+                            <th class="py-3 px-4">AI Demand</th>
+                            <th class="py-3 px-4">AI Waste Risk</th>
+                            <th class="py-3 px-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventory-table-body" class="divide-y divide-slate-100">
+                        <!-- Rendered dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modal: Add Item -->
+    <div id="add-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center z-50 hidden">
+        <div class="bg-white border border-emerald-200 rounded-3xl w-full max-w-md p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-base font-bold text-emerald-950 flex items-center gap-2">
+                    <i class="fa-solid fa-cart-plus text-emerald-600"></i> Add Purchased Food Item
+                </h3>
+                <button onclick="closeAddItemModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="add-item-form" onsubmit="submitAddItem(event)" class="space-y-3.5">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Item Name</label>
+                    <input type="text" id="add-name" required placeholder="e.g. Whole Milk 2L" class="w-full bg-emerald-50/30 border border-emerald-200 text-xs rounded-xl px-3 py-2 text-slate-800 focus:outline-none focus:border-emerald-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Category</label>
+                        <select id="add-category" class="w-full bg-emerald-50/30 border border-emerald-200 text-xs rounded-xl px-3 py-2 text-slate-800 focus:outline-none focus:border-emerald-500">
+                            <option value="Dairy">Dairy</option>
+                            <option value="Bakery">Bakery</option>
+                            <option value="Vegetables">Vegetables</option>
+                            <option value="Fruits">Fruits</option>
+                            <option value="Meat & Seafood">Meat & Seafood</option>
+                            <option value="Grains & Staples">Grains & Staples</option>
+                            <option value="Beverages">Beverages</option>
+                            <option value="Snacks & Pantry">Snacks & Pantry</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Storage Condition</label>
+                        <select id="add-storage" class="w-full bg-emerald-50/30 border border-emerald-200 text-xs rounded-xl px-3 py-2 text-slate-800 focus:outline-none focus:border-emerald-500">
+                            <option value="Fridge">Fridge</option>
+                            <option value="Pantry">Pantry</option>
+                            <option value="Freezer">Freezer</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Quantity</label>
+                        <input type="number" step="0.1" min="0.1" id="add-quantity" required value="1.0" class="w-full bg-emerald-50/30 border border-emerald-200 text-xs rounded-xl px-3 py-2 text-slate-800 focus:outline-none focus:border-emerald-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Unit</label>
+                        <input type="text" id="add-unit" required value="kg" placeholder="kg, L, units" class="w-full bg-emerald-50/30 border border-emerald-200 text-xs rounded-xl px-3 py-2 text-slate-800 focus:outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Purchase Date</label>
+                        <input type="date" id="add-purchase-date" required class="w-full bg-emerald-50/30 border border-emerald-200 text-xs rounded-xl px-3 py-2 text-slate-800 focus:outline-none focus:border-emerald-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Expiry Date</label>
+                        <input type="date" id="add-expiry-date" required class="w-full bg-emerald-50/30 border border-emerald-200 text-xs rounded-xl px-3 py-2 text-slate-800 focus:outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+
+                <div class="pt-2 flex justify-end space-x-2">
+                    <button type="button" onclick="closeAddItemModal()" class="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-800 bg-slate-100 rounded-xl">Cancel</button>
+                    <button type="submit" class="px-4 py-2 text-xs font-bold text-white bg-emerald-700 hover:bg-emerald-800 rounded-xl shadow">Add to Linked List</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-white border border-emerald-200 text-slate-800 text-xs px-4 py-3 rounded-2xl shadow-xl flex items-center gap-3 transition-opacity duration-300 opacity-0 pointer-events-none z-50">
+        <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-600 text-base"></i>
+        <span id="toast-message" class="font-medium">Message text</span>
+    </div>
+
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
